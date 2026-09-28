@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background color to prevent white flash on dark theme startup -->
+    <color name="window_background">#0F0F1A</color>
+    <color name="ic_launcher_background">#6200EE</color>
+</resources>

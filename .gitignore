@@ -1,0 +1,31 @@
+# Android
+**/build/
+.gradle/
+*.iml
+.idea/
+local.properties
+.DS_Store
+
+# Backend
+backend/downloads/
+backend/__pycache__/
+*.pyc
+
+# APK binaries (distribute via GitHub Releases)
+*.apk
+app-debug.apk
+app-release.apk
+
+# Local JDK
+jdk-21/
+
+# Keystore & Secrets
+*.jks
+*.keystore
+keystore.properties
+
+# Binary dependencies & local tools (AARs resolved via Maven/JitPack)
+android-app/app/libs/
+bin/
+attachments/
+

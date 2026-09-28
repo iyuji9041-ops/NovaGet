@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="66dp"
+    android:height="66dp"
+    android:viewportWidth="66"
+    android:viewportHeight="66">
+
+    <!-- Frosted Glass Card Base with rounded corners -->
+    <path
+        android:pathData="M12,4 L54,4 A8,8 0 0 1 62,12 L62,54 A8,8 0 0 1 54,62 L12,62 A8,8 0 0 1 4,54 L4,12 A8,8 0 0 1 12,4 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="4"
+                android:startY="4"
+                android:endX="62"
+                android:endY="62"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#40FFFFFF" />
+                <item android:offset="1.0" android:color="#15FFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Glowing Frosted Glass Border -->
+    <path
+        android:pathData="M12,4 L54,4 A8,8 0 0 1 62,12 L62,54 A8,8 0 0 1 54,62 L12,62 A8,8 0 0 1 4,54 L4,12 A8,8 0 0 1 12,4 Z"
+        android:strokeWidth="1.5">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="4"
+                android:startY="4"
+                android:endX="62"
+                android:endY="62"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#AA06B6D4" />
+                <item android:offset="0.5" android:color="#66FFFFFF" />
+                <item android:offset="1.0" android:color="#888B5CF6" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Neon Play Triangle Accent -->
+    <path
+        android:pathData="M23,20 L45,33 L23,46 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="23"
+                android:startY="20"
+                android:endX="45"
+                android:endY="46"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#6606B6D4" />
+                <item android:offset="1.0" android:color="#338B5CF6" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Glowing Download Arrow -->
+    <path
+        android:pathData="M33,18 L33,38 M25,31 L33,39 L41,31"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="25"
+                android:startY="18"
+                android:endX="41"
+                android:endY="39"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#00F5FF" />
+                <item android:offset="1.0" android:color="#A78BFA" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Bottom Tray Bar -->
+    <path
+        android:pathData="M22,46 L44,46"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeColor="#FFFFFF" />
+</vector>
