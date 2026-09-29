@@ -26,7 +26,8 @@
 > **NovaGet is developed strictly for educational, personal archival, and fair-use research purposes.**  
 > - NovaGet **does NOT host, store, index, or distribute** any media files, video streams, or copyrighted data.
 > - All media extractions, parsing, and downloads are executed **100% locally on the user's device** directly between the user's phone and the target public URL.
-> - The developers and contributors of NovaGet accept **NO RESPONSIBILITY OR LIABILITY** for any misuse of this application.
+> - **⚠️ Account Safety Notice:** **Do NOT log into your personal Google or YouTube accounts** inside NovaGet. Using automated stream extractors or ad-blockers while signed into your personal account violates YouTube's Terms of Service and may result in account warnings, suspension, or permanent bans by Google/YouTube. Always use guest / incognito mode.
+> - The developers and contributors of NovaGet accept **NO RESPONSIBILITY OR LIABILITY** for any misuse of this application or account penalties.
 > - **End users are solely responsible** for ensuring that their downloads comply with all applicable copyright laws in their jurisdiction and the Terms of Service of respective content providers (YouTube, Instagram, TikTok, Facebook, Twitter/X, etc.).
 
 ---

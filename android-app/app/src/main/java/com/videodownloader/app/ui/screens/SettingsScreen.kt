@@ -723,6 +723,11 @@ fun SettingsScreen(
                     )
 
                     PrivacyPolicySection(
+                        title = "⚠️ Account Safety Notice (Do NOT Login to YouTube/Google)",
+                        body = "Do NOT log into your personal Google or YouTube accounts inside NovaGet's built-in browser. Using automated download extractors or ad-blockers while signed into your personal account violates YouTube's Terms of Service and could risk account restriction, temporary suspension, or termination by YouTube/Google. Always browse and download anonymously as a guest."
+                    )
+
+                    PrivacyPolicySection(
                         title = "5. Legal Disclaimer & Fair Use",
                         body = "This software is provided for personal backup, offline research, and educational fair use only. Users are responsible for complying with the Terms of Service of respective content providers."
                     )
