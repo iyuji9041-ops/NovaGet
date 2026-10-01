@@ -16,14 +16,17 @@ All error responses are JSON:  {"error": "<message>"}
 
 from __future__ import annotations
 
+import ipaddress
 import logging
 import mimetypes
 import os
+import socket
 import threading
 import time
 import uuid
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from flask import Flask, jsonify, request, send_file, abort, Response
 from flask_cors import CORS
@@ -57,10 +60,33 @@ def _err(message: str, status: int = 400) -> tuple[Response, int]:
     return jsonify({"error": message}), status
 
 
+def _is_safe_url(url: str) -> bool:
+    """Validate that the target URL is http/https and does not resolve to private or loopback IP ranges."""
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return False
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+        if hostname.lower() in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+            return False
+        addr_info = socket.getaddrinfo(hostname, None)
+        for entry in addr_info:
+            ip_str = entry[4][0]
+            ip = ipaddress.ip_address(ip_str)
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+                return False
+        return True
+    except Exception:
+        return False
+
+
 def _get_request_url() -> str | None:
     """Extract and validate the 'url' field from the JSON request body."""
     data = request.get_json(silent=True) or {}
-    return (data.get("url") or "").strip() or None
+    url = (data.get("url") or "").strip()
+    return url or None
 
 
 def _new_job_id() -> str:
@@ -207,6 +233,8 @@ def api_info() -> tuple[Response, int]:
     url = _get_request_url()
     if not url:
         return _err("'url' field is required.")
+    if not _is_safe_url(url):
+        return _err("Invalid or restricted URL target.", 400)
 
     try:
         info = dl.extract_info(url)
@@ -239,6 +267,8 @@ def api_formats() -> tuple[Response, int]:
     url = (request.args.get("url") or "").strip()
     if not url:
         return _err("'url' query parameter is required.")
+    if not _is_safe_url(url):
+        return _err("Invalid or restricted URL target.", 400)
 
     try:
         formats = dl.get_formats(url)
@@ -283,6 +313,8 @@ def api_download() -> tuple[Response, int]:
 
     if not url:
         return _err("'url' field is required.")
+    if not _is_safe_url(url):
+        return _err("Invalid or restricted URL target.", 400)
     if dl_type not in ("mp4", "mp3"):
         return _err("'type' must be 'mp4' or 'mp3'.")
 
@@ -373,7 +405,7 @@ def api_download_direct() -> Any:
         # Security: ensure the resolved path lives inside DOWNLOAD_DIR
         abs_download = os.path.abspath(config.DOWNLOAD_DIR)
         filepath = os.path.abspath(raw_path)
-        if not filepath.startswith(abs_download):
+        if os.path.commonpath([filepath, abs_download]) != abs_download:
             abort(403)
     else:
         return _err("Either 'job_id' or 'path' query parameter is required.")

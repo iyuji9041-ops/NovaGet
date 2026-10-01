@@ -50,31 +50,31 @@ class DownloadManager(
         // Public Downloads
         val publicDownloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         if (publicDownloads != null) {
-            val f = File(publicDownloads, "NovaGet").apply { mkdirs() }
-            list.add(StorageOption("downloads", "Downloads", "Downloads/NovaGet", f))
+            val f = File(publicDownloads, "Zaswix").apply { mkdirs() }
+            list.add(StorageOption("downloads", "Downloads", "Downloads/Zaswix", f))
         }
 
         // App Scoped Downloads
         context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)?.let {
-            val f = File(it, "NovaGet").apply { mkdirs() }
+            val f = File(it, "Zaswix").apply { mkdirs() }
             if (list.none { opt -> opt.id == "downloads" }) {
-                list.add(StorageOption("downloads", "Downloads", "Downloads/NovaGet", f))
+                list.add(StorageOption("downloads", "Downloads", "Downloads/Zaswix", f))
             }
         }
 
         context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.let {
-            val f = File(it, "NovaGet").apply { mkdirs() }
-            list.add(StorageOption("movies", "Movies", "Movies/NovaGet", f))
+            val f = File(it, "Zaswix").apply { mkdirs() }
+            list.add(StorageOption("movies", "Movies", "Movies/Zaswix", f))
         }
 
         context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.let {
-            val f = File(it, "NovaGet").apply { mkdirs() }
-            list.add(StorageOption("music", "Music / Audio", "Music/NovaGet", f))
+            val f = File(it, "Zaswix").apply { mkdirs() }
+            list.add(StorageOption("music", "Music / Audio", "Music/Zaswix", f))
         }
 
         context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)?.let {
-            val f = File(it, "NovaGet").apply { mkdirs() }
-            list.add(StorageOption("documents", "Documents", "Documents/NovaGet", f))
+            val f = File(it, "Zaswix").apply { mkdirs() }
+            list.add(StorageOption("documents", "Documents", "Documents/Zaswix", f))
         }
 
         val internalDir = File(context.filesDir, "videos").apply { mkdirs() }
@@ -250,6 +250,9 @@ class DownloadManager(
                     } else it
                 }
             } finally {
+                if (com.videodownloader.app.engine.ExtractionEngine.isInstagramUrl(video.url)) {
+                    com.videodownloader.app.engine.ExtractionEngine.cleanupInstagramCookies(context)
+                }
                 activeJobs.remove(video.id)
                 if (activeJobs.isEmpty()) {
                     DownloadForegroundService.stop(context)

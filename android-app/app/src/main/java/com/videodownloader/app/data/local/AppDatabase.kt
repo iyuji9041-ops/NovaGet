@@ -186,7 +186,7 @@ class AppDatabase private constructor(context: Context) : SQLiteOpenHelper(conte
     fun videoDao(): VideoDao = this
 
     companion object {
-        private const val DATABASE_NAME = "novaget_database.db"
+        private const val DATABASE_NAME = "zaswix_database.db"
         private const val DATABASE_VERSION = 1
         private const val TABLE_NAME = "video_downloads"
 

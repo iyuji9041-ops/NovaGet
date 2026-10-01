@@ -143,7 +143,7 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "NovaGet",
+                                text = "Zaswix",
                                 color = TextPrimary,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,

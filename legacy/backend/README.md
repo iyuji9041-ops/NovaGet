@@ -1,6 +1,7 @@
-# Video Downloader – Flask Backend
+# Video Downloader – Flask Backend (Legacy / Deprecated)
 
-A production-ready Python Flask backend that wraps **yt-dlp** to download videos and audio from YouTube, Instagram, TikTok, Twitter/X, Facebook, Reddit, Vimeo, Dailymotion, and [hundreds of other sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md).
+> **⚠️ DEPRECATED, LOCAL-ONLY, NOT FOR PRODUCTION:**
+> The Android application is now 100% standalone and executes extraction and downloads on-device using its embedded Python 3.12 and FFmpeg engines. This backend is preserved for legacy or local testing purposes only.
 
 ---
 

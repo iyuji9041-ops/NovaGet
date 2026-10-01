@@ -337,14 +337,16 @@ fun BrowserScreen(
                             databaseEnabled = true
                             loadWithOverviewMode = true
                             useWideViewPort = true
-                            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                            mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                             mediaPlaybackRequiresUserGesture = false
-                            allowFileAccess = true
+                            allowFileAccess = false
+                            allowContentAccess = false
                             userAgentString = "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                         }
 
                         addJavascriptInterface(
                             BrowserMediaBridge(
+                                getTopUrl = { webViewInstance?.url ?: currentUrl },
                                 onPlayingStateChanged = { playing, pageUrl ->
                                     isVideoPlaying = playing
                                     if (!pageUrl.isNullOrBlank()) {
@@ -553,11 +555,24 @@ fun cleanVideoWatchUrl(url: String): String {
     return trimmed
 }
 
+private fun isTrustedOrigin(url: String?): Boolean {
+    if (url.isNullOrBlank()) return false
+    val uri = try { android.net.Uri.parse(url) } catch (e: Exception) { return false }
+    val host = uri.host?.lowercase() ?: return false
+    return host == "youtube.com" || host.endsWith(".youtube.com") ||
+            host == "youtu.be" ||
+            host == "instagram.com" || host.endsWith(".instagram.com") ||
+            host == "tiktok.com" || host.endsWith(".tiktok.com") ||
+            host == "x.com" || host.endsWith(".x.com") ||
+            host == "twitter.com" || host.endsWith(".twitter.com")
+}
+
 /**
  * JavaScript Interface Bridge to communicate HTML5 media playback events
  * and SPA route navigations back to Android Compose.
  */
 class BrowserMediaBridge(
+    private val getTopUrl: () -> String?,
     private val onPlayingStateChanged: (Boolean, String?) -> Unit,
     private val onUrlChanged: (String) -> Unit
 ) {
@@ -565,6 +580,10 @@ class BrowserMediaBridge(
 
     @android.webkit.JavascriptInterface
     fun onMediaPlaying(isPlaying: Boolean, pageUrl: String?) {
+        val topUrl = getTopUrl()
+        if (!isTrustedOrigin(topUrl) && !isTrustedOrigin(pageUrl)) {
+            return
+        }
         mainHandler.post {
             onPlayingStateChanged(isPlaying, pageUrl)
         }
@@ -572,6 +591,10 @@ class BrowserMediaBridge(
 
     @android.webkit.JavascriptInterface
     fun onUrlNavigate(newUrl: String) {
+        val topUrl = getTopUrl()
+        if (!isTrustedOrigin(topUrl) || !isTrustedOrigin(newUrl)) {
+            return
+        }
         mainHandler.post {
             onUrlChanged(newUrl)
         }
@@ -802,9 +825,9 @@ private val YOUTUBE_APP_CLEANER_JS = """
 
         // Layer 3: Cosmetic CSS Filter to hide ad containers
         function injectAdStyles() {
-            if (!document.getElementById('novaget-yt-style')) {
+            if (!document.getElementById('zaswix-yt-style')) {
                 var style = document.createElement('style');
-                style.id = 'novaget-yt-style';
+                style.id = 'zaswix-yt-style';
                 style.innerHTML = `
                     /* Layer 3: Cosmetic CSS Filter */
                     ytm-promoted-sparkles-web-renderer,

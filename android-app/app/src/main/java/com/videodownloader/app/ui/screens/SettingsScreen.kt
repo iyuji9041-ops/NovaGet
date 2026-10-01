@@ -1,10 +1,13 @@
 package com.videodownloader.app.ui.screens
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,9 +24,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Checkbox
@@ -35,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,11 +48,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.videodownloader.app.engine.ExtractionEngine
 import com.videodownloader.app.ui.DownloadViewModel
 import com.videodownloader.app.ui.NavTab
@@ -55,8 +64,11 @@ import com.videodownloader.app.ui.components.NovaIcons
 import com.videodownloader.app.ui.components.NovaPill
 import com.videodownloader.app.ui.components.NovaPillBackgroundBrush
 import com.videodownloader.app.ui.components.NovaPillBorderBrush
-import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * SettingsScreen designed exactly according to the user's provided XML layout:
@@ -102,6 +114,21 @@ fun SettingsScreen(
             val customDir = File(externalDir ?: context.filesDir, folderName).apply { mkdirs() }
             viewModel.setCustomStorageDirectory(customDir, folderName)
             Toast.makeText(context, "Storage set to $folderName", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val avatarBitmap by produceState<Bitmap?>(initialValue = null) {
+        withContext(Dispatchers.IO) {
+            try {
+                val conn = URL("https://avatars.githubusercontent.com/u/324851361?v=4").openConnection() as HttpURLConnection
+                conn.connectTimeout = 4000
+                conn.readTimeout = 4000
+                conn.inputStream.use { input ->
+                    value = BitmapFactory.decodeStream(input)
+                }
+            } catch (e: Exception) {
+                value = null
+            }
         }
     }
 
@@ -155,10 +182,113 @@ fun SettingsScreen(
                     )
 
                     NovaPill(
-                        text = "NovaGet v2.4",
+                        text = "Zaswix v2.4",
                         leadingIcon = NovaIcons.ElectricBolt,
                         iconTint = NovaAccentPurple
                     )
+                }
+
+                // Developer GitHub Profile Card with Live Avatar DP
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    Color(0x35A855F7),
+                                    Color(0x1506B6D4)
+                                )
+                            )
+                        )
+                        .border(
+                            1.dp,
+                            Brush.horizontalGradient(
+                                listOf(
+                                    NovaAccentPurple.copy(alpha = 0.6f),
+                                    Color(0xFF06B6D4).copy(alpha = 0.4f)
+                                )
+                            ),
+                            RoundedCornerShape(16.dp)
+                        )
+                        .clickable {
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/iyuji9041-ops"))
+                                context.startActivity(intent)
+                            } catch (ignored: Exception) {}
+                        }
+                        .padding(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Avatar DP with Neon Border
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .border(1.5.dp, NovaAccentPurple, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (avatarBitmap != null) {
+                                Image(
+                                    bitmap = avatarBitmap!!.asImageBitmap(),
+                                    contentDescription = "GitHub Avatar DP",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(NovaAccentPurple.copy(alpha = 0.3f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("⚡", fontSize = 20.sp)
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "iyuji9041-ops",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(0x30A855F7))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "Author",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFD8B4FE)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = "github.com/iyuji9041-ops",
+                                fontSize = 12.sp,
+                                color = Color(0xFF06B6D4)
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Open GitHub",
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -565,20 +695,43 @@ fun SettingsScreen(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(NovaPillBackgroundBrush)
-                                .border(1.dp, NovaPillBorderBrush, RoundedCornerShape(10.dp))
-                                .clickable { showPrivacyPolicyDialog = true }
-                                .padding(horizontal = 12.dp, vertical = 7.dp)
-                        ) {
-                            Text(
-                                text = "Read",
-                                color = Color.White,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(NovaPillBackgroundBrush)
+                                    .border(1.dp, NovaPillBorderBrush, RoundedCornerShape(10.dp))
+                                    .clickable { showPrivacyPolicyDialog = true }
+                                    .padding(horizontal = 10.dp, vertical = 7.dp)
+                            ) {
+                                Text(
+                                    text = "Read",
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0x2006B6D4))
+                                    .border(1.dp, Color(0x6006B6D4), RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/iyuji9041-ops/NovaGet/blob/main/privacy_policy.html"))
+                                            context.startActivity(intent)
+                                        } catch (ignored: Exception) {}
+                                    }
+                                    .padding(horizontal = 10.dp, vertical = 7.dp)
+                            ) {
+                                Text(
+                                    text = "Web ↗",
+                                    color = Color(0xFF67E8F9),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }
@@ -697,14 +850,14 @@ fun SettingsScreen(
                     }
 
                     Text(
-                        text = "NovaGet is designed with strict Zero-Knowledge & Zero-Telemetry architecture to protect user privacy.",
+                        text = "Zaswix is designed with strict Zero-Knowledge & Zero-Telemetry architecture to protect user privacy.",
                         fontSize = 13.sp,
                         color = Color(0xFFD1D5DB)
                     )
 
                     PrivacyPolicySection(
                         title = "1. 100% On-Device Processing",
-                        body = "NovaGet does not collect, transmit, proxy, or store any of your video/audio downloads or browsing history on external servers. All extraction (yt-dlp) and conversion (FFmpeg) runs 100% locally on your phone CPU."
+                        body = "Zaswix does not collect, transmit, proxy, or store any of your video/audio downloads or browsing history on external servers. All extraction (yt-dlp) and conversion (FFmpeg) runs 100% locally on your phone CPU."
                     )
 
                     PrivacyPolicySection(
@@ -713,22 +866,22 @@ fun SettingsScreen(
                     )
 
                     PrivacyPolicySection(
-                        title = "3. Storage & Network Access",
-                        body = "Storage access is used strictly to save media files to your selected directory. Network access is used solely to stream content directly from the media source URL you choose."
+                        title = "3. Ephemeral Cookies & Local Storage",
+                        body = "Session cookies used for private reel extractions are strictly temporary. Cookies are purged and deleted from disk in finally blocks immediately upon download completion, failure, or cancellation. Storage access is used strictly to save media files to your device."
                     )
 
                     PrivacyPolicySection(
-                        title = "4. Third-Party Websites & WebView",
-                        body = "When using the built-in browser, you connect directly to third-party services (such as YouTube, Instagram). NovaGet blocks intrusive ad scripts and trackers, and does not log your credentials or session data."
+                        title = "⚠️ Instagram Safety Warning (Use Secondary Account)",
+                        body = "DO NOT log into your personal or main Instagram account inside the app. Always use a dedicated dummy or secondary account when downloading private reels or stories. Automated download extraction on personal accounts violates Instagram terms and risks account restriction, temporary suspension, or action blocks. Zaswix never stores or transmits your credentials."
                     )
 
                     PrivacyPolicySection(
-                        title = "⚠️ Account Safety Notice (Do NOT Login to YouTube/Google)",
-                        body = "Do NOT log into your personal Google or YouTube accounts inside NovaGet's built-in browser. Using automated download extractors or ad-blockers while signed into your personal account violates YouTube's Terms of Service and could risk account restriction, temporary suspension, or termination by YouTube/Google. Always browse and download anonymously as a guest."
+                        title = "⚠️ YouTube Safety Warning (Guest Browsing)",
+                        body = "Do NOT log into your personal Google or YouTube accounts inside Zaswix's built-in browser. Using automated download extractors or ad-blockers while signed into your personal account violates YouTube's Terms of Service and could risk account penalties. Always browse and download anonymously as a guest."
                     )
 
                     PrivacyPolicySection(
-                        title = "5. Legal Disclaimer & Fair Use",
+                        title = "4. Legal Disclaimer & Fair Use",
                         body = "This software is provided for personal backup, offline research, and educational fair use only. Users are responsible for complying with the Terms of Service of respective content providers."
                     )
 

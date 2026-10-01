@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -8,11 +10,11 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.videodownloader.app"
+        applicationId = "com.zaswix.downloader"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
         ndk {
@@ -26,7 +28,7 @@ android {
         ?: file("../keystore.properties").takeIf { it.exists() }
         ?: file("keystore.properties").takeIf { it.exists() }
 
-    val keystoreProperties = java.util.Properties().apply {
+    val keystoreProperties = Properties().apply {
         if (keystorePropsFile != null && keystorePropsFile.exists()) {
             keystorePropsFile.inputStream().use { load(it) }
         }
@@ -94,54 +96,46 @@ android {
     }
 }
 
-// Force transitive dependencies to versions that have AARs in the local maven repo.
-// appcompat:1.6.1 transitively requires drawerlayout:1.0.0 and (via coordinatorlayout)
-// customview:1.0.0, but only POMs exist for those versions locally.
-configurations.all {
-    resolutionStrategy {
-        force("androidx.drawerlayout:drawerlayout:1.1.1")
-        force("androidx.customview:customview:1.1.0")
-    }
-}
-
 dependencies {
-    // Core AndroidX — versions from local repo
-    implementation("androidx.core:core-ktx:1.8.0")
-    implementation("androidx.activity:activity-compose:1.5.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
+    // Core AndroidX
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
 
-    // Compose — version 1.3.0 (local repo)
-    implementation("androidx.compose.ui:ui:1.3.0")
-    implementation("androidx.compose.ui:ui-graphics:1.3.0")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.3.0")
-    implementation("androidx.compose.foundation:foundation:1.3.0")
-    implementation("androidx.compose.material:material:1.3.0")
-    implementation("androidx.compose.material:material-icons-core:1.3.0")
-    implementation("androidx.compose.animation:animation:1.3.0")
-    implementation("androidx.compose.runtime:runtime:1.3.0")
+    // Compose (Compatible with Kotlin 1.9.22 & Compose compiler 1.5.10)
+    val composeBom = platform("androidx.compose:compose-bom:2024.02.02")
+    implementation(composeBom)
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.animation:animation")
+    implementation("androidx.compose.runtime:runtime")
 
-    // Material3 — 1.0.0 (local repo)
-    implementation("androidx.compose.material3:material3:1.0.0")
+    // Material3
+    implementation("androidx.compose.material3:material3")
 
-    // Navigation Compose — 2.5.3 (local repo)
-    implementation("androidx.navigation:navigation-compose:2.5.3")
-    implementation("androidx.navigation:navigation-runtime-ktx:2.5.3")
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-runtime-ktx:2.7.7")
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
 
     // Standalone yt-dlp & FFmpeg for Android with Python 3.12 (Runs 100% on Phone CPU)
     implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
     implementation("io.github.junkfood02.youtubedl-android:common:0.18.1")
     implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.11.1")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.11.1")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.11.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.17.2")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
     implementation("commons-io:commons-io:2.16.1")
-    implementation("org.apache.commons:commons-compress:1.21")
+    implementation("org.apache.commons:commons-compress:1.26.2")
 
     // Gson (for JSON parsing)
     implementation("com.google.code.gson:gson:2.10.1")
@@ -150,8 +144,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
 
     // Debug
-    debugImplementation("androidx.compose.ui:ui-tooling:1.3.0")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.3.0")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Test
     testImplementation("junit:junit:4.13.2")

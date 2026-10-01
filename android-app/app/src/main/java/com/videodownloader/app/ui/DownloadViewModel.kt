@@ -99,7 +99,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
     val standardStorageOptions: List<StorageOption> = downloadManager.getStandardStorageOptions()
     private val _selectedStorageOption = MutableStateFlow<StorageOption>(
         standardStorageOptions.firstOrNull() ?: StorageOption(
-            "default", "Default Storage", "NovaGet", downloadManager.getDownloadDirectory()
+            "default", "Default Storage", "Zaswix", downloadManager.getDownloadDirectory()
         )
     )
     val selectedStorageOption: StateFlow<StorageOption> = _selectedStorageOption.asStateFlow()
@@ -126,7 +126,7 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
     val activePlayingVideo: StateFlow<VideoDownloadEntity?> = _activePlayingVideo.asStateFlow()
 
     // Settings backed by SharedPreferences
-    private val prefs = application.getSharedPreferences("novaget_prefs", Context.MODE_PRIVATE)
+    private val prefs = application.getSharedPreferences("zaswix_prefs", Context.MODE_PRIVATE)
 
     val wifiOnly = MutableStateFlow(prefs.getBoolean("pref_wifi_only", false))
     val maxConcurrent = MutableStateFlow(prefs.getInt("pref_max_concurrent", 2))

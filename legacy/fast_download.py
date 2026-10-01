@@ -23,7 +23,7 @@ def download_chunk(url, start, end, part_path, chunk_idx, ctx):
     print(f"Chunk {chunk_idx} finished", flush=True)
 
 def parallel_download(url, out_path, num_chunks=8):
-    ctx = ssl._create_unverified_context()
+    ctx = ssl.create_default_context()
     total_size = get_file_size(url, ctx)
     print(f"Downloading {out_path} ({total_size / (1024*1024):.2f} MB) in {num_chunks} parallel chunks...", flush=True)
     if total_size <= 0:

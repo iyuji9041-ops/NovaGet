@@ -5,29 +5,11 @@
 # Keep data models (Gson serialization)
 -keep class com.videodownloader.app.data.model.** { *; }
 
-# Keep Retrofit interfaces
--keep interface com.videodownloader.app.data.api.** { *; }
-
-# OkHttp
--dontwarn okhttp3.**
--dontwarn okio.**
-
-# Retrofit
--dontwarn retrofit2.**
--keep class retrofit2.** { *; }
-
 # Gson
 -keepattributes Signature
 -keepattributes *Annotation*
 -dontwarn sun.misc.**
 -keep class com.google.gson.** { *; }
-
-# WorkManager
--keep class * extends androidx.work.Worker
--keep class * extends androidx.work.CoroutineWorker
-
-# Coil
--dontwarn coil.**
 
 # youtubedl-android & FFmpeg Native Runtime
 -keep class com.yausername.youtubedl_android.** { *; }

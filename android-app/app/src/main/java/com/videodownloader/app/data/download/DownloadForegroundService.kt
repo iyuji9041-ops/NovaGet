@@ -19,7 +19,7 @@ import com.videodownloader.app.MainActivity
 class DownloadForegroundService : Service() {
 
     companion object {
-        const val CHANNEL_ID = "novaget_download_channel"
+        const val CHANNEL_ID = "zaswix_download_channel"
         const val NOTIFICATION_ID = 2001
 
         const val ACTION_START = "com.videodownloader.app.action.START"
@@ -119,7 +119,7 @@ class DownloadForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "NovaGet Downloads",
+                "Zaswix Downloads",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Live progress notifications for active downloads"

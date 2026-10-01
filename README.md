@@ -1,7 +1,7 @@
-# ⚡ NovaGet — Modern Android Video & Audio Downloader
+# ⚡ Zaswix — Modern Android Video & Audio Downloader
 
 <p align="center">
-  <img src="android-app/app/src/main/res/drawable/ic_app_logo.png" width="128" height="128" alt="NovaGet Logo" />
+  <img src="android-app/app/src/main/res/drawable/ic_app_logo.png" width="128" height="128" alt="Zaswix Logo" />
 </p>
 
 <p align="center">
@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/Platform-Android_8.0+_(API_26+)-3DDC84?logo=android&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/Language-Kotlin_1.9-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin" />
   <img src="https://img.shields.io/badge/UI-Jetpack_Compose_Material3-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose" />
+  <img src="https://img.shields.io/badge/Package-com.zaswix.downloader-9333EA" alt="Package" />
   <img src="https://img.shields.io/badge/Architecture-arm64--v8a_(~53MB)-FF6F00" alt="Arch" />
   <img src="https://img.shields.io/badge/License-GPL_v3.0-blue.svg" alt="License" />
 </p>
@@ -23,11 +24,12 @@
 
 > [!CAUTION]
 > **USER RESPONSIBILITY NOTICE:**  
-> **NovaGet is developed strictly for educational, personal archival, and fair-use research purposes.**  
-> - NovaGet **does NOT host, store, index, or distribute** any media files, video streams, or copyrighted data.
+> **Zaswix is developed strictly for educational, personal archival, and fair-use research purposes.**  
+> - Zaswix **does NOT host, store, index, or distribute** any media files, video streams, or copyrighted data.
 > - All media extractions, parsing, and downloads are executed **100% locally on the user's device** directly between the user's phone and the target public URL.
-> - **⚠️ Account Safety Notice:** **Do NOT log into your personal Google or YouTube accounts** inside NovaGet. Using automated stream extractors or ad-blockers while signed into your personal account violates YouTube's Terms of Service and may result in account warnings, suspension, or permanent bans by Google/YouTube. Always use guest / incognito mode.
-> - The developers and contributors of NovaGet accept **NO RESPONSIBILITY OR LIABILITY** for any misuse of this application or account penalties.
+> - **⚠️ Instagram Safety Notice:** **Do NOT use your personal or primary Instagram account**. Always use a dedicated dummy or secondary account for downloading private reels or stories. Automated download extraction on personal accounts violates Instagram terms and risks account restriction, temporary suspension, or action blocks.
+> - **⚠️ YouTube Safety Notice:** **Do NOT log into your personal Google or YouTube accounts** inside Zaswix. Using automated stream extractors or ad-blockers while signed into your personal account violates YouTube's Terms of Service and may result in account warnings, suspension, or permanent bans by Google/YouTube. Always use guest / incognito mode.
+> - The developers and contributors of Zaswix accept **NO RESPONSIBILITY OR LIABILITY** for any misuse of this application or account penalties.
 > - **End users are solely responsible** for ensuring that their downloads comply with all applicable copyright laws in their jurisdiction and the Terms of Service of respective content providers (YouTube, Instagram, TikTok, Facebook, Twitter/X, etc.).
 
 ---
@@ -40,9 +42,9 @@
   1. *Network Layer*: Intercepts and drops known ad/tracking domains (`doubleclick`, `googlesyndication`, `googleadservices`, `an.facebook.com`, etc.) with empty 200 OK responses.
   2. *Payload Layer*: Injected JavaScript hooks `JSON.parse` and `fetch` to recursively strip YouTube ad placement objects.
   3. *DOM Layer*: Cosmetic CSS filters hiding promotional banners plus an automated video ad fast-forwarder and skip-button clicker.
-- 🎨 **Cyber Glassmorphism UI**: Beautiful, fluid dark-mode design crafted with Jetpack Compose, acrylic surfaces, and neon accents.
+- 🎨 **Cyber Glassmorphism UI**: Beautiful, fluid dark-mode design crafted with Jetpack Compose, acrylic surfaces, and neon accents with instant, zero-lag tab transitions.
 - 🎯 **Smart Format Selector**: Proportional resolution hierarchy supporting 4K, 2K, 1080p, 720p, 480p, 360p, alongside audio extraction (MP3 @ 320k/192k, M4A, OPUS).
-- 📲 **1-Tap Share Target**: Share any video link directly from YouTube, Instagram, or Twitter into NovaGet to instantly open download options.
+- 📲 **1-Tap Share Target**: Share any video link directly from YouTube, Instagram, or Twitter into Zaswix to instantly open download options.
 - 🔔 **Background Download Service**: Persistent Android Foreground Service with real-time speed, progress bar, and ETA notifications.
 - 📦 **Compact Binary Size**: Clean single-architecture (`arm64-v8a`) release build weighing only **~53 MB** with safe R8 optimization.
 
@@ -52,7 +54,7 @@
 
 ```
 downloader/
-├── android-app/                       ← Native Android Project
+├── android-app/                       ← Native Android Project (Package: com.zaswix.downloader)
 │   ├── app/src/main/
 │   │   ├── java/com/videodownloader/app/
 │   │   │   ├── MainActivity.kt        ← App entry point & Intent Share Target handler
@@ -70,6 +72,11 @@ downloader/
 │   │   └── proguard-rules.pro         ← Crash-prevention keep rules for reflection
 │   ├── gradle.properties
 │   └── settings.gradle.kts
+├── legacy/                            ← Deprecated / Local-Only Flask backend & scripts
+│   ├── backend/                       ← Deprecated server (SSRF protected, localhost only)
+│   ├── fast_download.py               ← Deprecated CLI script (SSL verified)
+│   └── start_backend.sh               ← Deprecated start script
+├── privacy_policy.html                ← Complete Privacy Policy & Safety Guidelines
 ├── keystore.properties.example        ← Release signing credentials template
 ├── LICENSE                            ← GNU General Public License v3.0
 └── README.md
@@ -79,7 +86,7 @@ downloader/
 
 ## 🛠️ Building From Source
 
-NovaGet is designed to be effortlessly compiled by any developer with zero setup friction.
+Zaswix is designed to be effortlessly compiled by any developer with zero setup friction.
 
 ### Prerequisites
 - **JDK 17** or higher

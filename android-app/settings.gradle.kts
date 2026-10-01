@@ -8,10 +8,13 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
-        maven { url = uri("/root/maven/localMvnRepository") }
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
+        val localMvn = file("/root/maven/localMvnRepository")
+        if (localMvn.exists()) {
+            maven { url = uri(localMvn) }
+        }
     }
 }
 

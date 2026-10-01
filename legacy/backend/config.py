@@ -11,13 +11,13 @@ DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", "./downloads")
 MAX_FILE_SIZE = int(os.environ.get("MAX_FILE_SIZE", 500 * 1024 * 1024))  # 500 MB
 
 # ── Server Settings ────────────────────────────────────────────────────────────
-HOST = os.environ.get("HOST", "0.0.0.0")
+HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", 5000))
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # ── CORS Settings ──────────────────────────────────────────────────────────────
-# Restrict in production; "*" is fine for local / emulator dev
-CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*")
+# Restrict to local origin by default instead of wildcard '*'
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://127.0.0.1:5000,http://localhost:5000")
 
 # ── yt-dlp / Download Behaviour ───────────────────────────────────────────────
 # Maximum concurrent downloads (reserved for future rate-limiting use)

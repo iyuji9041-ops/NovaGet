@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaswix — Privacy Policy & Terms of Use</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0e12;
+            --surface: #16181f;
+            --surface-elevated: #1e2029;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(168, 85, 247, 0.4);
+            --primary: #a855f7;
+            --primary-glow: rgba(168, 85, 247, 0.25);
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --text-main: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.65;
+            padding: 24px 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 840px;
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 100px rgba(168, 85, 247, 0.05);
+            backdrop-filter: blur(16px);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .app-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #a855f7 0%, #06b6d4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 4px 16px var(--primary-glow);
+        }
+
+        .logo-text h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #ffffff, #d8b4fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .dev-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .dev-badge:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
+        .dev-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1.5px solid var(--primary);
+            object-fit: cover;
+        }
+
+        .dev-badge span {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-green);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 28px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 span.num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        p, li {
+            font-size: 14.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .warning-card {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .warning-card h3 {
+            color: #fca5a5;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-card p {
+            color: #fecaca;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .info-card {
+            background: rgba(6, 182, 212, 0.08);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .info-card h3 {
+            color: #67e8f9;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .info-card p {
+            color: #cffafe;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px 18px;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-wrap">
+                <div class="app-badge">⚡</div>
+                <div class="logo-text">
+                    <h1>Zaswix</h1>
+                    <p>High-Speed On-Device Video Downloader</p>
+                </div>
+            </div>
+            <a href="https://github.com/iyuji9041-ops" target="_blank" rel="noopener noreferrer" class="dev-badge">
+                <img src="https://avatars.githubusercontent.com/u/324851361?v=4" alt="iyuji9041-ops" class="dev-avatar">
+                <span>@iyuji9041-ops</span>
+            </a>
+        </header>
+
+        <div class="tag-pill">
+            <span>🛡️ 100% On-Device • Zero Telemetry • Local Execution</span>
+        </div>
+
+        <p><strong>Effective Date:</strong> September 2026</p>
+        <p>This Privacy Policy explains how <strong>Zaswix</strong> (Package: <code>com.zaswix.downloader</code>) processes information and prioritizes user privacy and security.</p>
+
+        <h2><span class="num">1</span> 100% On-Device Processing (No Central Servers)</h2>
+        <p>Zaswix is built on a strict <strong>Zero-Knowledge architecture</strong>. The app does not operate any backend servers, proxy servers, tracking relays, or external cloud infrastructure. All parsing, extraction, downloading, and FFmpeg media conversion run <strong>100% locally on your device's CPU</strong> using bundled Python 3.12 and yt-dlp binaries.</p>
+
+        <h2><span class="num">2</span> Zero Data Collection & Zero Telemetry</h2>
+        <p>We believe your media consumption is your private business:</p>
+        <ul>
+            <li><strong>No Analytics SDKs:</strong> There are no Google Analytics, Firebase, Mixpanel, or third-party telemetry tools embedded in the app.</li>
+            <li><strong>No Advertising IDs:</strong> We do not read or transmit your Google Advertising ID (AAID) or hardware identifiers.</li>
+            <li><strong>No Logging:</strong> Your downloaded URLs, video titles, and search queries never leave your device.</li>
+        </ul>
+
+        <div class="warning-card">
+            <h3>⚠️ Important Account Safety Notice — Instagram & YouTube</h3>
+            <p><strong>DO NOT USE YOUR PRIMARY / PERSONAL INSTAGRAM ACCOUNT</strong> inside the app. If you need to access private reels, stories, or accounts you follow, always use a dedicated dummy or secondary account. Automating extraction scripts on personal social media accounts violates platform terms and can trigger automated security challenges, temporary action blocks, or account suspension by Meta/Instagram or Google/YouTube. Always browse anonymously as a guest whenever possible.</p>
+        </div>
+
+        <h2><span class="num">3</span> Ephemeral Session Cookies Policy</h2>
+        <p>When you log into Instagram inside the built-in browser to view restricted reels:</p>
+        <ul>
+            <li>Session cookies are temporarily held only in the Android WebKit CookieManager in private app storage.</li>
+            <li>When an extraction starts, cookies are exported to a temporary file <code>instagram_cookies.txt</code>.</li>
+            <li><strong>Guaranteed Immediate Deletion:</strong> As soon as the download finishes, fails, or is cancelled, this cookie file is unconditionally deleted in a <code>finally</code> block.</li>
+            <li>Old leftover cookie files in the private cache are automatically purged every time Zaswix starts.</li>
+            <li>Cookie values and paths are strictly scrubbed and never printed to Android logcat or external logs.</li>
+        </ul>
+
+        <h2><span class="num">4</span> Storage & Device Permissions</h2>
+        <p>Zaswix requests only the absolute minimum permissions required to perform its functions:</p>
+        <ul>
+            <li><strong>Internet (INTERNET & ACCESS_NETWORK_STATE):</strong> Used exclusively to open direct connections to the public media stream URLs that you request.</li>
+            <li><strong>Storage (Scoped Storage):</strong> Used solely to write your downloaded video and audio files into your designated <code>Downloads/Zaswix</code> folder. The app cannot and does not read any of your personal photos, private documents, or other apps' files.</li>
+            <li><strong>Foreground Service & Notifications:</strong> Used to keep long-running downloads active in the background and display live download progress, speed, and completion status.</li>
+        </ul>
+
+        <h2><span class="num">5</span> Built-in Browser & AdBlocker</h2>
+        <p>The integrated web browser connects directly to third-party services (YouTube, TikTok, Instagram, Twitter/X). A 3-layer hybrid ad-blocker strips telemetry trackers and ads before they execute. Cleartext HTTP traffic is disabled (<code>usesCleartextTraffic="false"</code>) to prevent man-in-the-middle tampering.</p>
+
+        <h2><span class="num">6</span> Legal Disclaimer</h2>
+        <p>Zaswix is provided for personal backup, offline research, and fair-use archiving. Users are solely responsible for ensuring compliance with copyright laws and the terms of service of any third-party website.</p>
+
+        <footer>
+            <p>Maintained with care by <a href="https://github.com/iyuji9041-ops" target="_blank" rel="noopener noreferrer">iyuji9041-ops</a>.</p>
+            <p style="margin-top: 6px; font-size: 12px;">Zaswix Open-Source Project • Built for Android</p>
+        </footer>
+    </div>
+</body>
+</html>

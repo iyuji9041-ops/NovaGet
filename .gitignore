@@ -6,13 +6,16 @@
 local.properties
 .DS_Store
 
-# Backend
+# Backend (Legacy)
 backend/downloads/
 backend/__pycache__/
+legacy/backend/downloads/
+legacy/backend/__pycache__/
 *.pyc
 
 # APK binaries (distribute via GitHub Releases)
 *.apk
+*.idsig
 app-debug.apk
 app-release.apk
 

@@ -1,10 +1,5 @@
 package com.videodownloader.app.ui
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -60,7 +56,7 @@ import com.videodownloader.app.ui.theme.TextPrimary
 import com.videodownloader.app.ui.theme.TextSecondary
 import com.videodownloader.app.ui.theme.TextTertiary
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: DownloadViewModel
@@ -148,16 +144,38 @@ fun MainScreen(
                     .fillMaxSize()
                     .statusBarsPadding()
             ) {
-                AnimatedContent(
-                    targetState = selectedTab,
-                    transitionSpec = { fadeIn() with fadeOut() }
-                ) { targetTab ->
-                    when (targetTab) {
-                        NavTab.HOME -> HomeScreen(viewModel = viewModel, contentPadding = paddingValues)
-                        NavTab.BROWSER -> BrowserScreen(viewModel = viewModel, contentPadding = paddingValues)
-                        NavTab.DOWNLOADS -> DownloadsScreen(viewModel = viewModel, contentPadding = paddingValues)
-                        NavTab.SETTINGS -> SettingsScreen(viewModel = viewModel, contentPadding = paddingValues)
-                    }
+                // Persistent Tab View Container for Zero-Lag, Instant Tab Switching
+                // Keeps screen states alive, eliminating heavy WebView and database recomposition freeze
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (selectedTab == NavTab.HOME) Modifier else Modifier.size(0.dp).alpha(0f))
+                ) {
+                    HomeScreen(viewModel = viewModel, contentPadding = paddingValues)
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (selectedTab == NavTab.BROWSER) Modifier else Modifier.size(0.dp).alpha(0f))
+                ) {
+                    BrowserScreen(viewModel = viewModel, contentPadding = paddingValues)
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (selectedTab == NavTab.DOWNLOADS) Modifier else Modifier.size(0.dp).alpha(0f))
+                ) {
+                    DownloadsScreen(viewModel = viewModel, contentPadding = paddingValues)
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (selectedTab == NavTab.SETTINGS) Modifier else Modifier.size(0.dp).alpha(0f))
+                ) {
+                    SettingsScreen(viewModel = viewModel, contentPadding = paddingValues)
                 }
             }
         }
