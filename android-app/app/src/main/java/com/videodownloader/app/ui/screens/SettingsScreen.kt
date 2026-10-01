@@ -719,7 +719,7 @@ fun SettingsScreen(
                                     .border(1.dp, Color(0x6006B6D4), RoundedCornerShape(10.dp))
                                     .clickable {
                                         try {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/iyuji9041-ops/NovaGet/blob/main/privacy_policy.html"))
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://iyuji9041-ops.github.io/NovaGet/privacy_policy.html"))
                                             context.startActivity(intent)
                                         } catch (ignored: Exception) {}
                                     }
