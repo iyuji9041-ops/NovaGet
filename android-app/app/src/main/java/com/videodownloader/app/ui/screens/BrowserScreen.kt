@@ -49,9 +49,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,9 +94,9 @@ fun BrowserScreen(
 ) {
     val focusManager = LocalFocusManager.current
 
-    var currentUrl by remember { mutableStateOf("https://m.youtube.com") }
-    var inputUrl by remember { mutableStateOf("https://m.youtube.com") }
-    var pageTitle by remember { mutableStateOf("YouTube") }
+    var currentUrl by rememberSaveable { mutableStateOf("https://m.youtube.com") }
+    var inputUrl by rememberSaveable { mutableStateOf("https://m.youtube.com") }
+    var pageTitle by rememberSaveable { mutableStateOf("YouTube") }
     var webProgress by remember { mutableStateOf(0f) }
     var isLoading by remember { mutableStateOf(false) }
     var canGoBack by remember { mutableStateOf(false) }
@@ -104,6 +106,17 @@ fun BrowserScreen(
     var webViewInstance by remember { mutableStateOf<WebView?>(null) }
     var isVideoPlaying by remember { mutableStateOf(false) }
     var activeVideoUrl by remember { mutableStateOf<String?>(null) }
+
+    val externalPlatformUrl by viewModel.browserUrlToLoad.collectAsState()
+    androidx.compose.runtime.LaunchedEffect(externalPlatformUrl) {
+        externalPlatformUrl?.let { url ->
+            if (url.isNotBlank() && url != currentUrl) {
+                currentUrl = url
+                inputUrl = url
+                webViewInstance?.loadUrl(url)
+            }
+        }
+    }
 
     // Download modal setup
     com.videodownloader.app.ui.components.DownloadSetupDialog(viewModel = viewModel)
@@ -326,6 +339,10 @@ fun BrowserScreen(
                     .weight(1f),
                 factory = { ctx ->
                     WebView(ctx).apply {
+                        val cookieManager = android.webkit.CookieManager.getInstance()
+                        cookieManager.setAcceptCookie(true)
+                        cookieManager.setAcceptThirdPartyCookies(this, true)
+
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
@@ -369,6 +386,28 @@ fun BrowserScreen(
                         )
 
                         webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                                val targetUrl = request?.url?.toString() ?: return false
+                                val uri = request.url ?: return false
+                                val scheme = uri.scheme?.lowercase() ?: ""
+
+                                if (scheme != "http" && scheme != "https") {
+                                    try {
+                                        val intent = android.content.Intent.parseUri(targetUrl, android.content.Intent.URI_INTENT_SCHEME)
+                                        view?.context?.startActivity(intent)
+                                    } catch (ignored: Exception) {}
+                                    return true
+                                }
+
+                                // GitHub should ONLY be accessed when explicitly clicked from developer profile/page in Settings tab
+                                val host = uri.host?.lowercase() ?: ""
+                                if (host == "github.com" || host.endsWith(".github.com") || host.endsWith(".github.io")) {
+                                    return true // block browser redirect to github
+                                }
+
+                                return false
+                            }
+
                             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                 super.onPageStarted(view, url, favicon)
                                 isLoading = true
@@ -380,13 +419,15 @@ fun BrowserScreen(
                                         activeVideoUrl = cleaned
                                     }
                                     if (it.contains("youtube.com") || it.contains("youtu.be")) {
-                                        // Layer 2: Inject early JSON stripper & fetch hooks before player scripts run
+                                        // Layer 2: Inject safe fetch hook before player scripts run
                                         view?.evaluateJavascript(YOUTUBE_AD_STRIPPER_EARLY_JS, null)
                                     }
                                     if (it.contains("youtube.com/watch") || it.contains("youtu.be/") ||
                                         it.contains("youtube.com/shorts") ||
                                         it.contains("instagram.com/reel") || it.contains("instagram.com/p/") ||
-                                        it.contains("tiktok.com/@") || it.contains("twitter.com/") || it.contains("x.com/")
+                                        it.contains("tiktok.com/@") || it.contains("twitter.com/") || it.contains("x.com/") ||
+                                        it.contains("facebook.com/reel") || it.contains("facebook.com/watch") ||
+                                        it.contains("facebook.com/share") || it.contains("fb.watch/") || it.contains("facebook.com/story")
                                     ) {
                                         detectedMediaUrl = if (cleaned.isNotBlank()) cleaned else it
                                     }
@@ -407,21 +448,26 @@ fun BrowserScreen(
                                         activeVideoUrl = cleaned
                                     }
                                     if (it.contains("youtube.com") || it.contains("youtu.be")) {
-                                        // Layers 2 & 3: Inject YouTube JSON payload stripper, cosmetic CSS filter, and video ad auto-skipper
                                         view?.evaluateJavascript(YOUTUBE_AD_STRIPPER_EARLY_JS, null)
                                         view?.evaluateJavascript(YOUTUBE_APP_CLEANER_JS, null)
                                     } else {
                                         view?.evaluateJavascript(MEDIA_MONITOR_JS, null)
                                     }
                                     if (it.contains("instagram.com")) {
-                                        // Sync Instagram session cookies for private video and story downloads
                                         try {
                                             android.webkit.CookieManager.getInstance().flush()
                                             com.videodownloader.app.engine.ExtractionEngine.getInstagramCookieFile(ctx)
                                         } catch (ignored: Exception) {}
                                     }
+                                    if (it.contains("facebook.com") || it.contains("fb.watch")) {
+                                        try {
+                                            android.webkit.CookieManager.getInstance().flush()
+                                            com.videodownloader.app.engine.ExtractionEngine.getFacebookCookieFile(ctx)
+                                        } catch (ignored: Exception) {}
+                                    }
                                     if (it.contains("youtube.com") || it.contains("youtu.be") ||
                                         it.contains("instagram.com") || it.contains("tiktok.com") ||
+                                        it.contains("facebook.com") || it.contains("fb.watch") ||
                                         it.contains("x.com") || it.contains("twitter.com")) {
                                         detectedMediaUrl = if (cleaned.isNotBlank()) cleaned else it
                                     }
@@ -452,9 +498,10 @@ fun BrowserScreen(
                                     )
                                 }
 
-                                // Existing Video Link Detector / Sniffer (preserved 100%)
+                                // Video Link Detector / Sniffer
                                 if (lower.endsWith(".mp4") || lower.endsWith(".m4v") ||
-                                    (lower.contains("cdninstagram.com") && lower.contains(".mp4"))
+                                    (lower.contains("cdninstagram.com") && lower.contains(".mp4")) ||
+                                    (lower.contains("fbcdn.net") && lower.contains(".mp4"))
                                 ) {
                                     detectedMediaUrl = reqUrl
                                 }
@@ -539,20 +586,7 @@ fun BrowserScreen(
 fun cleanVideoWatchUrl(url: String): String {
     val trimmed = url.trim()
     if (trimmed.isBlank() || trimmed.contains("googlevideo.com")) return ""
-
-    // YouTube Video ID extractor (watch?v=, /shorts/, youtu.be/)
-    val ytPattern = java.util.regex.Pattern.compile("(?:v=|/shorts/|youtu\\.be/)([a-zA-Z0-9_-]{11})")
-    val matcher = ytPattern.matcher(trimmed)
-    if (matcher.find()) {
-        val id = matcher.group(1)
-        return "https://www.youtube.com/watch?v=$id"
-    }
-
-    if (trimmed.contains("m.youtube.com")) {
-        return trimmed.replace("m.youtube.com", "www.youtube.com")
-    }
-
-    return trimmed
+    return com.videodownloader.app.engine.ExtractionEngine.sanitizeUrl(trimmed)
 }
 
 private fun isTrustedOrigin(url: String?): Boolean {
@@ -562,6 +596,8 @@ private fun isTrustedOrigin(url: String?): Boolean {
     return host == "youtube.com" || host.endsWith(".youtube.com") ||
             host == "youtu.be" ||
             host == "instagram.com" || host.endsWith(".instagram.com") ||
+            host == "facebook.com" || host.endsWith(".facebook.com") ||
+            host == "fb.watch" || host == "fb.com" || host.endsWith(".fb.com") ||
             host == "tiktok.com" || host.endsWith(".tiktok.com") ||
             host == "x.com" || host.endsWith(".x.com") ||
             host == "twitter.com" || host.endsWith(".twitter.com")
@@ -635,49 +671,13 @@ private fun isAdUrl(url: String): Boolean {
     return isAdDomain || isAdPath
 }
 
-// Layer 2: Early JSON Payload Stripper & Fetch Hook (Injected on onPageStarted and onPageFinished)
+// Layer 2: Network Ad Fetch Filter (Injected on onPageStarted and onPageFinished)
 private val YOUTUBE_AD_STRIPPER_EARLY_JS = """
     (function() {
         if (window.__novaAdStripperInjected) return;
         window.__novaAdStripperInjected = true;
 
-        // Recursive helper to delete YouTube ad placement keys from JSON objects
-        function stripAdKeys(obj) {
-            if (!obj || typeof obj !== 'object') return obj;
-            if (Array.isArray(obj)) {
-                for (var i = 0; i < obj.length; i++) {
-                    stripAdKeys(obj[i]);
-                }
-                return obj;
-            }
-            try {
-                delete obj.adPlacements;
-                delete obj.playerAds;
-                delete obj.adSlots;
-                delete obj.adBreakHeartbeatParams;
-                delete obj.adSlotsEngage;
-            } catch(e) {}
-
-            for (var key in obj) {
-                if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                    stripAdKeys(obj[key]);
-                }
-            }
-            return obj;
-        }
-
-        // Hook JSON.parse to intercept YouTube initial player response and player JSON
-        var origParse = JSON.parse;
-        JSON.parse = function() {
-            var res = origParse.apply(this, arguments);
-            try {
-                return stripAdKeys(res);
-            } catch(e) {
-                return res;
-            }
-        };
-
-        // Hook window.fetch for dynamic /youtubei/v1/player requests
+        // Hook window.fetch to drop telemetry tracking and ad metrics without breaking app state
         if (window.fetch) {
             var origFetch = window.fetch;
             window.fetch = function() {
@@ -686,26 +686,7 @@ private val YOUTUBE_AD_STRIPPER_EARLY_JS = """
                 if (url && (url.indexOf('/api/stats/ads') !== -1 || url.indexOf('/pagead/') !== -1 || url.indexOf('/ptracking') !== -1 || url.indexOf('/get_midroll_') !== -1)) {
                     return Promise.resolve(new Response('{}', { status: 200, statusText: 'OK' }));
                 }
-                return origFetch.apply(this, args).then(function(resp) {
-                    if (url && url.indexOf('/youtubei/v1/player') !== -1) {
-                        try {
-                            var clone = resp.clone();
-                            return clone.json().then(function(json) {
-                                stripAdKeys(json);
-                                return new Response(JSON.stringify(json), {
-                                    headers: resp.headers,
-                                    status: resp.status,
-                                    statusText: resp.statusText
-                                });
-                            }).catch(function() {
-                                return resp;
-                            });
-                        } catch(e) {
-                            return resp;
-                        }
-                    }
-                    return resp;
-                });
+                return origFetch.apply(this, args);
             };
         }
     })();
@@ -869,33 +850,11 @@ private val YOUTUBE_APP_CLEANER_JS = """
             }
         }
 
-        // Layer 3: Auto Skip Video Ads & Fast Forward
+        // Layer 3: Auto Skip Video Ads Safely
         function autoSkipAds() {
             injectAdStyles();
 
-            // 1. Check if #movie_player or .html5-video-player has .ad-showing or .ad-interrupting
-            var player = document.querySelector('#movie_player, .html5-video-player');
-            var isAdShowing = false;
-            if (player) {
-                isAdShowing = player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting');
-            }
-            if (!isAdShowing) {
-                isAdShowing = !!document.querySelector('.ad-showing, .ad-interrupting, .ytp-ad-player-overlay');
-            }
-
-            // 2. Mute and fast-forward video to end immediately
-            var video = document.querySelector('video');
-            if (video && isAdShowing) {
-                try {
-                    video.muted = true;
-                    if (isFinite(video.duration) && video.duration > 0) {
-                        video.currentTime = video.duration;
-                    }
-                    video.playbackRate = 16.0;
-                } catch(e) {}
-            }
-
-            // 3. Auto-click all YouTube ad skip buttons
+            // 1. Auto-click YouTube ad skip buttons
             var skipSelectors = [
                 '.ytp-ad-skip-button',
                 '.ytp-ad-skip-button-modern',
@@ -905,7 +864,7 @@ private val YOUTUBE_APP_CLEANER_JS = """
                 'button.ytp-ad-skip-button-modern',
                 '.ytp-ad-overlay-close-button',
                 'button[id*="skip"]',
-                'div[id*="skip"]'
+                '.ytp-ad-text[class*="skip"]'
             ];
             for (var i = 0; i < skipSelectors.length; i++) {
                 var btns = document.querySelectorAll(skipSelectors[i]);
@@ -915,10 +874,28 @@ private val YOUTUBE_APP_CLEANER_JS = """
                     } catch(e) {}
                 }
             }
+
+            // 2. Safe ad fast-forward without jumping normal videos
+            var player = document.querySelector('#movie_player, .html5-video-player');
+            var isAdShowing = player && (player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting'));
+            var video = document.querySelector('video');
+            if (video) {
+                if (isAdShowing) {
+                    try {
+                        video.muted = true;
+                        video.playbackRate = 8.0;
+                    } catch(e) {}
+                } else if (video.playbackRate > 2.0) {
+                    try {
+                        video.playbackRate = 1.0;
+                        video.muted = false;
+                    } catch(e) {}
+                }
+            }
         }
 
         autoSkipAds();
-        setInterval(autoSkipAds, 250);
+        setInterval(autoSkipAds, 350);
 
         // Attach MutationObserver for dynamic single-page DOM changes
         if (window.MutationObserver) {

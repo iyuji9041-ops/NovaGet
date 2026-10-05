@@ -28,29 +28,77 @@ object ExtractionEngine {
     private const val CACHE_EXPIRY_MS = 10 * 60 * 1000L // 10 minutes
 
     /**
-     * Strips tracking tokens and clutter (e.g. ?si=, &list=, ?igsh=) from URLs
-     * to prevent yt-dlp from attempting to parse playlists or making tracking redirects.
+     * Normalizes and cleans URLs for YouTube, Instagram, Facebook, TikTok, and X.
+     * Extracts canonical platform video IDs and strips tracking parameters (e.g. ?si=, ?igsh=, ?mibextid=)
+     * so that yt-dlp receives 100% valid, direct URLs.
      */
     fun sanitizeUrl(url: String): String {
-        var cleaned = url.trim()
-        if (isYouTubeUrl(cleaned)) {
-            cleaned = cleaned.replace(Regex("[?&]si=[^&]+"), "")
-                .replace(Regex("[?&]list=[^&]+"), "")
-                .replace(Regex("[?&]index=[^&]+"), "")
-                .replace(Regex("[?&]feature=[^&]+"), "")
-                .replace(Regex("[?&]start_radio=[^&]+"), "")
-            if (cleaned.contains("?") && !cleaned.substringAfter("?").contains("=")) {
-                cleaned = cleaned.substringBefore("?")
+        val trimmed = url.trim()
+        if (trimmed.isBlank()) return ""
+        try {
+            val uri = android.net.Uri.parse(trimmed)
+            val host = uri.host?.lowercase() ?: ""
+            val scheme = if (uri.scheme.isNullOrBlank()) "https" else uri.scheme?.lowercase()
+
+            if (host.contains("youtube.com") || host.contains("youtu.be")) {
+                // Short link youtu.be/<id>
+                if (host.contains("youtu.be")) {
+                    val videoId = uri.lastPathSegment ?: ""
+                    if (videoId.isNotBlank()) {
+                        return "https://www.youtube.com/watch?v=$videoId"
+                    }
+                }
+                val path = uri.path ?: ""
+                // Shorts: /shorts/<id>
+                if (path.contains("/shorts/")) {
+                    val id = path.substringAfter("/shorts/").substringBefore("/").substringBefore("?")
+                    if (id.isNotBlank()) {
+                        return "https://www.youtube.com/watch?v=$id"
+                    }
+                }
+                // Live: /live/<id>
+                if (path.contains("/live/")) {
+                    val id = path.substringAfter("/live/").substringBefore("/").substringBefore("?")
+                    if (id.isNotBlank()) {
+                        return "https://www.youtube.com/watch?v=$id"
+                    }
+                }
+                // Standard watch: query parameter v
+                val v = uri.getQueryParameter("v")
+                if (!v.isNullOrBlank()) {
+                    return "https://www.youtube.com/watch?v=$v"
+                }
+                // Fallback: strip tracking params
+                val clean = trimmed.replace(Regex("[?&](si|list|index|feature|start_radio)=[^&]+"), "")
+                    .replace("?&", "?")
+                return if (clean.endsWith("?")) clean.dropLast(1) else clean
+            } else if (host.contains("instagram.com") || host.contains("instagr.am")) {
+                // Clean Instagram post/reel path
+                val path = uri.path ?: ""
+                val cleanPath = if (path.endsWith("/")) path else "$path/"
+                return "$scheme://$host$cleanPath"
+            } else if (host.contains("facebook.com") || host.contains("fb.watch") || host.contains("fb.com")) {
+                // Clean Facebook reel, watch or share link
+                val path = uri.path ?: ""
+                if (host.contains("fb.watch")) {
+                    val cleanPath = if (path.endsWith("/")) path else "$path/"
+                    return "$scheme://$host$cleanPath"
+                }
+                val v = uri.getQueryParameter("v")
+                if (!v.isNullOrBlank()) {
+                    return "https://www.facebook.com/watch/?v=$v"
+                }
+                val cleanPath = if (path.endsWith("/")) path else "$path/"
+                return "$scheme://$host$cleanPath"
+            } else if (host.contains("x.com") || host.contains("twitter.com")) {
+                val path = uri.path ?: ""
+                return "$scheme://$host$path"
+            } else if (host.contains("tiktok.com")) {
+                val path = uri.path ?: ""
+                return "$scheme://$host$path"
             }
-        } else if (isInstagramUrl(cleaned)) {
-            if (cleaned.contains("?")) {
-                cleaned = cleaned.substringBefore("?")
-            }
-            if (!cleaned.endsWith("/")) {
-                cleaned = "$cleaned/"
-            }
-        }
-        return cleaned
+        } catch (ignored: Exception) {}
+        return trimmed
     }
 
     /**
@@ -105,10 +153,14 @@ object ExtractionEngine {
     }
 
     /**
-     * Purges temporary Instagram cookie files from cacheDir/cookies
+     * Purges temporary cookie files from cacheDir/cookies
      * to prevent leftover session credentials from persisting on disk.
      */
     fun cleanupInstagramCookies(context: Context? = appContext) {
+        cleanupCookies(context)
+    }
+
+    fun cleanupCookies(context: Context? = appContext) {
         try {
             val ctx = context ?: appContext ?: return
             val cookieDir = File(ctx.cacheDir, "cookies")
@@ -181,11 +233,77 @@ object ExtractionEngine {
     }
 
     /**
+     * Facebook Cookie Extraction Utility:
+     * Reads session cookies from Android CookieManager for Facebook.
+     */
+    fun getFacebookCookies(): String? {
+        return try {
+            val cookieManager = CookieManager.getInstance()
+            val c1 = cookieManager.getCookie("https://www.facebook.com")
+            val c2 = cookieManager.getCookie("https://m.facebook.com")
+            when {
+                !c1.isNullOrBlank() -> c1
+                !c2.isNullOrBlank() -> c2
+                else -> null
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to read Facebook session cookies")
+            null
+        }
+    }
+
+    /**
+     * Facebook Netscape Cookie File Exporter:
+     * Generates a temporary standard Netscape cookies.txt file in the internal cache directory.
+     * This allows yt-dlp to authenticate reels, watch, and private Facebook posts.
+     */
+    fun getFacebookCookieFile(context: Context): File? {
+        return try {
+            val cm = CookieManager.getInstance()
+            val rawCookies = cm.getCookie("https://www.facebook.com")
+                ?: cm.getCookie("https://m.facebook.com")
+
+            if (rawCookies.isNullOrBlank() || (!rawCookies.contains("c_user") && !rawCookies.contains("xs"))) {
+                return null
+            }
+
+            val cookieDir = File(context.cacheDir, "cookies").apply { mkdirs() }
+            val cookieFile = File(cookieDir, "facebook_cookies.txt")
+            val sb = StringBuilder()
+            sb.append("# Netscape HTTP Cookie File\n")
+            sb.append("# Temporary Facebook Session Sync\n\n")
+
+            val pairs = rawCookies.split(";")
+            for (p in pairs) {
+                val kv = p.trim().split("=", limit = 2)
+                if (kv.size == 2) {
+                    val key = kv[0].trim()
+                    val value = kv[1].trim()
+                    sb.append(".facebook.com\tTRUE\t/\tTRUE\t2147483647\t$key\t$value\n")
+                }
+            }
+            cookieFile.writeText(sb.toString())
+            cookieFile
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to export Facebook cookies to file")
+            null
+        }
+    }
+
+    /**
      * Checks if a URL belongs to Instagram.
      */
     fun isInstagramUrl(url: String): Boolean {
         val lower = url.lowercase()
         return lower.contains("instagram.com") || lower.contains("instagr.am")
+    }
+
+    /**
+     * Checks if a URL belongs to Facebook.
+     */
+    fun isFacebookUrl(url: String): Boolean {
+        val lower = url.lowercase()
+        return lower.contains("facebook.com") || lower.contains("fb.watch") || lower.contains("fb.com")
     }
 
     /**
@@ -244,25 +362,33 @@ object ExtractionEngine {
                     Log.d(TAG, "Injected Instagram session cookies into request")
                 }
             }
+            request.addOption("--user-agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1")
         }
 
-        // Seal extraction configuration: skip translated subtitles & NEVER cap to player_client=android!
-        if (isYouTubeUrl(url)) {
-            request.addOption("--extractor-args", "youtube:skip=translated_subs")
+        // Facebook Cookie & Headers Injection
+        if (isFacebookUrl(url)) {
+            val cookieFile = appContext?.let { getFacebookCookieFile(it) }
+            if (cookieFile != null && cookieFile.exists()) {
+                request.addOption("--cookies", cookieFile.absolutePath)
+                Log.d(TAG, "Injected Facebook session cookie file for authenticated extraction")
+            } else {
+                val cookies = getFacebookCookies()
+                if (!cookies.isNullOrBlank()) {
+                    request.addOption("--add-header", "Cookie: $cookies")
+                }
+            }
+            request.addOption("--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
         }
 
         // Fast metadata inspection flags
         if (!isDownload) {
-            request.addOption("--flat-playlist")
             request.addOption("--no-check-certificates")
             request.addOption("--no-warnings")
             request.addOption("--no-call-home")
-            request.addOption("--no-check-formats")
             request.addOption("--prefer-free-formats")
-            request.addOption("--socket-timeout", "12")
-            request.addOption("--retries", "1")
-            request.addOption("--extractor-retries", "1")
-            request.addOption("--skip-download")
+            request.addOption("--socket-timeout", "15")
+            request.addOption("--retries", "3")
+            request.addOption("--extractor-retries", "3")
             request.addOption("--dump-single-json")
         }
 
@@ -768,20 +894,13 @@ object ExtractionEngine {
         // 2. High-speed single-pass getInfo with optimized parameters
         val request = YoutubeDLRequest(cleanUrl).apply {
             addOption("--no-playlist")
-            addOption("--flat-playlist")
             addOption("--no-check-certificates")
             addOption("--no-warnings")
             addOption("--no-call-home")
-            addOption("--no-check-formats")
             addOption("--prefer-free-formats")
-            addOption("--socket-timeout", "12")
-            addOption("--retries", "1")
-            addOption("--extractor-retries", "1")
-            addOption("--skip-download")
-
-            if (isYouTubeUrl(cleanUrl)) {
-                addOption("--extractor-args", "youtube:skip=translated_subs,dash")
-            }
+            addOption("--socket-timeout", "15")
+            addOption("--retries", "3")
+            addOption("--extractor-retries", "3")
 
             if (isInstagramUrl(cleanUrl)) {
                 val cookieFile = appContext?.let { getInstagramCookieFile(it) }
@@ -793,15 +912,27 @@ object ExtractionEngine {
                         addOption("--add-header", "Cookie: $cookies")
                     }
                 }
+                addOption("--user-agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1")
+            }
+
+            if (isFacebookUrl(cleanUrl)) {
+                val cookieFile = appContext?.let { getFacebookCookieFile(it) }
+                if (cookieFile != null && cookieFile.exists()) {
+                    addOption("--cookies", cookieFile.absolutePath)
+                } else {
+                    val cookies = getFacebookCookies()
+                    if (!cookies.isNullOrBlank()) {
+                        addOption("--add-header", "Cookie: $cookies")
+                    }
+                }
+                addOption("--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
             }
         }
 
         val ydlInfo = try {
             YoutubeDL.getInstance().getInfo(request)
         } finally {
-            if (isInstagramUrl(cleanUrl)) {
-                cleanupInstagramCookies()
-            }
+            cleanupCookies()
         }
         val durationSec = ydlInfo.duration
         val durationStr = if (durationSec > 0) {
@@ -878,9 +1009,7 @@ object ExtractionEngine {
                 onProgress(progress, etaInSeconds, line)
             }
         } finally {
-            if (isInstagramUrl(url)) {
-                cleanupInstagramCookies()
-            }
+            cleanupCookies()
         }
     }
 

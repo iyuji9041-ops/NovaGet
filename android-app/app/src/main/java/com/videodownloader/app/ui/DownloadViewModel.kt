@@ -66,6 +66,15 @@ class DownloadViewModel(application: Application) : AndroidViewModel(application
         _selectedTab.value = tab
     }
 
+    // In-App Browser URL navigation
+    private val _browserUrlToLoad = MutableStateFlow<String?>("https://m.youtube.com")
+    val browserUrlToLoad: StateFlow<String?> = _browserUrlToLoad.asStateFlow()
+
+    fun openPlatformInBrowser(url: String) {
+        _browserUrlToLoad.value = url
+        _selectedTab.value = NavTab.BROWSER
+    }
+
     // Engine status & update
     private val _isUpdatingEngine = MutableStateFlow(false)
     val isUpdatingEngine: StateFlow<Boolean> = _isUpdatingEngine.asStateFlow()

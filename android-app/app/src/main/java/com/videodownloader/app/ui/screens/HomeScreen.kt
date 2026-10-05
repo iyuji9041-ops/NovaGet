@@ -252,24 +252,29 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 val platforms = listOf(
-                    "YouTube" to Color(0xFFEF4444),
-                    "Instagram" to Color(0xFFEC4899),
-                    "TikTok" to Color(0xFFA855F7),
-                    "Twitter / X" to Color(0xFFF59E0B),
-                    "Facebook" to Color(0xFF3B82F6),
-                    "Direct MP4" to Color(0xFF10B981)
+                    Triple("YouTube", Color(0xFFEF4444), "https://m.youtube.com"),
+                    Triple("Instagram", Color(0xFFEC4899), "https://www.instagram.com"),
+                    Triple("Facebook", Color(0xFF3B82F6), "https://m.facebook.com"),
+                    Triple("TikTok", Color(0xFFA855F7), "https://www.tiktok.com"),
+                    Triple("Twitter / X", Color(0xFFF59E0B), "https://x.com"),
+                    Triple("Direct MP4", Color(0xFF10B981), "")
                 )
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(platforms) { (name, color) ->
+                    items(platforms) { (name, color, url) ->
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Color(0x18FFFFFF))
                                 .border(1.dp, Color(0x30FFFFFF), RoundedCornerShape(12.dp))
+                                .clickable(enabled = url.isNotBlank()) {
+                                    if (url.isNotBlank()) {
+                                        viewModel.openPlatformInBrowser(url)
+                                    }
+                                }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(

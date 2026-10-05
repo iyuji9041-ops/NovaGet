@@ -30,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -144,38 +143,12 @@ fun MainScreen(
                     .fillMaxSize()
                     .statusBarsPadding()
             ) {
-                // Persistent Tab View Container for Zero-Lag, Instant Tab Switching
-                // Keeps screen states alive, eliminating heavy WebView and database recomposition freeze
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (selectedTab == NavTab.HOME) Modifier else Modifier.size(0.dp).alpha(0f))
-                ) {
-                    HomeScreen(viewModel = viewModel, contentPadding = paddingValues)
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (selectedTab == NavTab.BROWSER) Modifier else Modifier.size(0.dp).alpha(0f))
-                ) {
-                    BrowserScreen(viewModel = viewModel, contentPadding = paddingValues)
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (selectedTab == NavTab.DOWNLOADS) Modifier else Modifier.size(0.dp).alpha(0f))
-                ) {
-                    DownloadsScreen(viewModel = viewModel, contentPadding = paddingValues)
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(if (selectedTab == NavTab.SETTINGS) Modifier else Modifier.size(0.dp).alpha(0f))
-                ) {
-                    SettingsScreen(viewModel = viewModel, contentPadding = paddingValues)
+                // Active Tab Content (Direct composition without animation lag or click interception)
+                when (selectedTab) {
+                    NavTab.HOME -> HomeScreen(viewModel = viewModel, contentPadding = paddingValues)
+                    NavTab.BROWSER -> BrowserScreen(viewModel = viewModel, contentPadding = paddingValues)
+                    NavTab.DOWNLOADS -> DownloadsScreen(viewModel = viewModel, contentPadding = paddingValues)
+                    NavTab.SETTINGS -> SettingsScreen(viewModel = viewModel, contentPadding = paddingValues)
                 }
             }
         }
